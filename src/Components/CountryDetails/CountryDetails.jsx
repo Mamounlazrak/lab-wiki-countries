@@ -1,6 +1,8 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react';
 // import countries from '../../countries.json'
 import { Link, useParams } from 'react-router-dom';
+import axios from 'axios';
+
 
 
 const findCountry = (countries, code) => {
@@ -12,9 +14,25 @@ const findCountry = (countries, code) => {
     return fromCodeToCountry.name.official;
 }
 
-
 function CountryDetails(props) {
+    
+    
     const {countryCode} = useParams();
+    const [getCountry, setGetCountry] = useState('');
+
+
+    useEffect(() => {
+        axios
+            .get(`https://ih-countries-api.herokuapp.com/countries/${countryCode}`)
+            .then((response) => {
+            setGetCountry(response.data)
+            })
+            .catch((err) => console.log(err))
+    }, 
+    [countryCode])
+
+    
+
     const foundCountry = props.countries.find((country) => {
         return country.alpha3Code === countryCode;
     });
@@ -23,22 +41,22 @@ function CountryDetails(props) {
     console.log(foundCountry)
   return (
     <div> 
-    {!foundCountry && <h1>No country found!</h1>}
-    {foundCountry && 
+    {!getCountry && <h1>No country found!</h1>}
+    {getCountry && 
         <>
 
-        <h1>{foundCountry.name.official}</h1>
+        <h1>{getCountry.name.official}</h1>
             <table className='table'>
               <thead></thead>
               <tbody>
                 <tr>
                   <td style={{width: "30%"}}>Capital</td>
-                  <td>{foundCountry.capital}</td>
+                  <td>{getCountry.capital}</td>
                 </tr>
                 <tr>
                   <td>Area</td>
                   <td>
-                    {`${foundCountry.area} km`}
+                    {`${getCountry.area} km`}
                     <sup>2</sup>
                   </td>
                 </tr>
@@ -46,9 +64,8 @@ function CountryDetails(props) {
                   <td>Borders</td>
                   <td>
                     <ul>
-                        {foundCountry.borders.map((border) => {
+                        {getCountry.borders.map((border) => {
                             return <li><Link to={`/${border}`}>{findCountry(props.countries, border)}</Link></li> 
-                            {/* return <li><Link to={`/${border}`}>{border}</Link></li>  */}
                         })}
                     </ul>
                   </td>
